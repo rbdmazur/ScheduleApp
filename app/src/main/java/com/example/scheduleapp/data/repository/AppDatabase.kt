@@ -4,12 +4,14 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.scheduleapp.data.dao.StudentDao
 import com.example.scheduleapp.data.dao.UserDao
+import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.User
 
 @Database(
     version = 1,
     entities = [
-        User::class
+        User::class,
+        Student::class
     ]
 )
 abstract class AppDatabase : RoomDatabase() {

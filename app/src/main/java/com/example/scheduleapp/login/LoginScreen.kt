@@ -1,6 +1,6 @@
 package com.example.scheduleapp.login
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,11 +13,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -26,11 +23,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +39,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.scheduleapp.R
 import com.example.scheduleapp.ui.theme.Typography
@@ -53,15 +47,23 @@ import com.example.scheduleapp.ui.theme.darkBlue
 import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.redError
 import com.example.scheduleapp.ui.theme.whiteAlpha
+import com.example.scheduleapp.utils.LoadingState
+import java.util.UUID
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = viewModel(),
+    toMainScreen: (String) -> Unit
+    ) {
     val emailInput = remember { mutableStateOf("") }
     val passwordInput = remember { mutableStateOf("") }
-    val errorState by viewModel.errorState.collectAsState()
+    val loginUiState by viewModel.loginUiState.collectAsState()
     Box(
-        modifier = Modifier.fillMaxSize().background(blue),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(blue),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -82,11 +84,9 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
             Spacer(Modifier.height(16.dp))
             PasswordTextField(passwordInput)
             Spacer(Modifier.height(32.dp))
-            when {
-                errorState.isFailure -> {
-                    Text(errorState.message, color = redError)
-                    Spacer(Modifier.height(32.dp))
-                }
+            if (loginUiState is LoadingState.Failure) {
+                loginUiState.message?.let { Text(it, color = redError) }
+                Spacer(Modifier.height(32.dp))
             }
             val context = LocalContext.current
             Button(
@@ -96,7 +96,9 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
                 ),
                 onClick = {
                     val userData = UserData(emailInput.value, passwordInput.value)
-                    viewModel.signIn(userData, context)
+                    viewModel.signIn(userData, context) {
+                        toMainScreen(it)
+                    }
                 }
             ) {
                 Text(
@@ -105,6 +107,7 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
                     fontSize = 16.sp
                 )
             }
+
         }
     }
 }

@@ -7,5 +7,6 @@ class ScheduleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         AppRepository.init(this.applicationContext)
+//        this.applicationContext.getSharedPreferences(null, MODE_PRIVATE)
     }
 }

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 private const val DATABASE_NAME = "app_database"
@@ -17,21 +19,29 @@ class AppRepository private constructor(context: Context) {
             DATABASE_NAME
         ).build()
 
-    suspend fun getAllUsers(): List<User> = database.getUserDao().getAllUsers()
-    suspend fun getUserById(id: UUID): User? = database.getUserDao().getUserById(id)
-    suspend fun insertUser(user: User) {
+    suspend fun getAllUsers(): List<User> = withContext(Dispatchers.IO) {
+        database.getUserDao().getAllUsers()
+    }
+    suspend fun getUserById(id: UUID): User? = withContext(Dispatchers.IO) {
+        database.getUserDao().getUserById(id)
+    }
+    suspend fun insertUser(user: User) = withContext(Dispatchers.IO) {
         database.getUserDao().insertUser(user)
     }
-    suspend fun deleteUser(user: User) {
+    suspend fun deleteUser(user: User) = withContext(Dispatchers.IO) {
         database.getUserDao().deleteUser(user)
     }
 
-    suspend fun getAllStudents(): List<Student> = database.getStudentDao().getAllStudents()
-    suspend fun getStudentById(id: UUID): Student? = database.getStudentDao().getStudentById(id)
-    suspend fun insertStudent(student: Student) {
+    suspend fun getAllStudents(): List<Student> = withContext(Dispatchers.IO) {
+        database.getStudentDao().getAllStudents()
+    }
+    suspend fun getStudentById(id: UUID): Student? = withContext(Dispatchers.IO) {
+        database.getStudentDao().getStudentById(id)
+    }
+    suspend fun insertStudent(student: Student) = withContext(Dispatchers.IO) {
         database.getStudentDao().insertStudent(student)
     }
-    suspend fun deleteStudent(student: Student) {
+    suspend fun deleteStudent(student: Student) = withContext(Dispatchers.IO) {
         database.getStudentDao().deleteStudent(student)
     }
 

@@ -1,7 +1,6 @@
 package com.example.scheduleapp.login
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scheduleapp.data.model.Student
@@ -12,22 +11,25 @@ import com.example.scheduleapp.remote.ScheduleApiClient
 import com.example.scheduleapp.remote.SessionManager
 import com.example.scheduleapp.remote.model.AuthResponse
 import com.example.scheduleapp.remote.model.StudentRemote
+import com.example.scheduleapp.utils.LoadingState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.util.UUID
 
 class LoginViewModel : ViewModel() {
 
-    private val _errorState = MutableStateFlow(LoginState())
-    val errorState = _errorState.asStateFlow()
+    private val _loginUiState = MutableStateFlow<LoadingState<UUID>>(LoadingState.Loading())
+    val loginUiState = _loginUiState.asStateFlow()
 
     private val userService = UserService()
     private val apiClient = ScheduleApiClient()
 
 
-    fun signIn(userData: UserData, context: Context) {
+    fun signIn(userData: UserData, context: Context, toMainScreen: (String) -> Unit) {
         val sessionManager = SessionManager(context)
         viewModelScope.launch {
             try {
@@ -39,21 +41,21 @@ class LoginViewModel : ViewModel() {
                     user = getUserFromResponse(userData, response)
                     userService.insertUser(user)
                 }
-                Log.d("NET", response.toString())
-                _errorState.value = LoginState(false, "")
+
                 var student = userService.getStudentById(user.id)
                 if (student == null) {
                     try {
-                        val studentResp = apiClient.getApiService(context).getStudent(user.id)
-                        student = studentResponseToStudentModel(studentResp)
+                        val studentRemote = apiClient.getApiService(context).getStudent(user.id)
+                        student = studentResponseToStudentModel(studentRemote)
                         userService.insertStudent(student)
-                        Log.d("NET", studentResp.toString())
                     } catch (e: HttpException) {
-                        Log.e("NET", e.message())
+                        _loginUiState.value = LoadingState.Failure(e.message())
                     }
                 }
+                _loginUiState.value = LoadingState.Success(UUID.fromString(response.userId))
+                toMainScreen(response.userId)
             } catch (e: HttpException) {
-                _errorState.value = LoginState(true, e.message())
+                _loginUiState.value = LoadingState.Failure(e.message())
             }
         }
     }
