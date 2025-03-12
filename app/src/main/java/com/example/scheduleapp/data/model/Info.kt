@@ -8,6 +8,6 @@ data class Info(
     @PrimaryKey val id: Int,
     val facultyId: Int,
     val specialization: String,
-    val course: String,
-    val group: String
+    val course: Int,
+    val group: Int
 )

@@ -1,11 +1,18 @@
 package com.example.scheduleapp.mainscreen
 
+import android.database.SQLException
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.scheduleapp.data.model.Info
+import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
+import com.example.scheduleapp.data.model.StudentToSchedule
+import com.example.scheduleapp.data.services.InfoService
+import com.example.scheduleapp.data.services.ScheduleService
 import com.example.scheduleapp.data.services.UserService
 import com.example.scheduleapp.remote.ScheduleApiService
+import com.example.scheduleapp.remote.model.ScheduleResponse
 import com.example.scheduleapp.remote.model.StudentRemote
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -31,31 +38,97 @@ class MainViewModel @AssistedInject constructor(
     val mainUiState = _mainUiState.asStateFlow()
 
     private val userService = UserService()
+    private val infoService = InfoService()
+    private val scheduleService = ScheduleService()
 
     init {
         viewModelScope.launch {
             _mainUiState.value = _mainUiState.value.copy(isLoading = true)
-            var student = userService.getStudentById(id)
-            if (student == null) {
-                try {
-                    val studentResponse = apiService.getStudent(id)
-                    student = studentResponseToStudentModel(studentResponse)
-                    userService.insertStudent(student)
-                } catch(e: Exception) {
-                    Log.d("MAINSCREEN", e.message.toString())
-                }
+            val student = loadStudent()
+            val schedules = loadSchedules()
+            val studentToSchedule = scheduleService.getStudentToScheduleByStudent(id)
+            val mainSchedule = studentToSchedule.find {
+                it.isMain
             }
-            _mainUiState.value = _mainUiState.value.copy(isLoading = false, currentStudent = student)
+            val currentScheduleIndex =
+                if(mainSchedule == null) 0
+                else schedules.indexOfFirst { it.scheduleId == mainSchedule.scheduleId }
+            _mainUiState.value = _mainUiState.value.copy(
+                isLoading = false,
+                currentStudent = student,
+                usersSchedules = schedules,
+                currentSchedule = currentScheduleIndex,
+                mainScheduleId = mainSchedule?.scheduleId ?: -1
+            )
         }
     }
 
-    private fun studentResponseToStudentModel(studentRemote: StudentRemote): Student =
-        Student(
-            userId = UUID.fromString(studentRemote.userId),
-            name = studentRemote.name,
+    private suspend fun loadSchedules(): List<Schedule> {
+        var studentWithSchedules = scheduleService.getSchedulesForStudent(id)
+        Log.d("RESP", studentWithSchedules.toString())
+        if (studentWithSchedules != null && studentWithSchedules.schedules.isEmpty()) {
+            val scheduleResponse = apiService.getSchedules()
+            Log.d("RESP", scheduleResponse.toString())
+            mapScheduleResponseAndAddToDb(scheduleResponse, id)
+            studentWithSchedules = scheduleService.getSchedulesForStudent(id)
+        }
+        return studentWithSchedules!!.schedules
+    }
+
+    private suspend fun mapScheduleResponseAndAddToDb(scheduleResponse: ScheduleResponse, userId: UUID) {
+        scheduleResponse.schedulesItems.forEach { scheduleRem ->
+            val scheduleRemote = scheduleRem.schedule
+            val schedule = Schedule(
+                scheduleId = scheduleRemote.id.toInt(),
+                title = scheduleRemote.title,
+                lastUpdate = scheduleRemote.lastUpdate.toLong(),
+                infoId = scheduleRemote.infoId.toInt()
+            )
+            scheduleService.insertSchedule(schedule)
+            val studentToSchedule = StudentToSchedule(
+                userId = userId,
+                scheduleId = schedule.scheduleId,
+                isMain = scheduleRem.isMain.toBoolean()
+            )
+            scheduleService.addScheduleToStudent(studentToSchedule)
+        }
+    }
+
+    fun updateSelectedSchedule(index: Int) {
+        _mainUiState.value = _mainUiState.value.copy(currentSchedule = index)
+    }
+
+    private suspend fun loadStudent(): Student? {
+        var student = userService.getStudentById(id)
+        if (student == null) {
+            try {
+                val studentResponse = apiService.getStudent(id)
+                val info = studentResponseToInfo(studentResponse)
+                try {
+                    infoService.insertInfo(info)
+                } catch(e: SQLException) {
+                    Log.d("INFOSQL", "This info is added")
+                }
+                student = studentResponseToStudentModel(studentResponse, info)
+                userService.insertStudent(student)
+            } catch(e: Exception) {
+                Log.d("MAINSCREEN", e.message.toString())
+            }
+        }
+        return student
+    }
+    private fun studentResponseToInfo(studentRemote: StudentRemote): Info =
+        Info(
+            id = studentRemote.info.id.toInt(),
             facultyId = studentRemote.info.facultyId.toInt(),
             specialization = studentRemote.info.specialization,
             course = studentRemote.info.course.toInt(),
             group = studentRemote.info.group.toInt()
+        )
+    private fun studentResponseToStudentModel(studentRemote: StudentRemote, info: Info): Student =
+        Student(
+            userId = UUID.fromString(studentRemote.userId),
+            name = studentRemote.name,
+            infoId = info.id
         )
 }

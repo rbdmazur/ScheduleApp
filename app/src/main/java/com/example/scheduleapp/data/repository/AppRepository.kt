@@ -83,6 +83,9 @@ class AppRepository private constructor(context: Context) {
     suspend fun getSchedulesForStudent(id: UUID): StudentWithSchedule? = withContext(Dispatchers.IO) {
         database.getScheduleDao().getSchedulesForStudent(id)
     }
+    suspend fun getStudentToScheduleByStudent(studentId: UUID): List<StudentToSchedule> = withContext(Dispatchers.IO) {
+        database.getScheduleDao().getStudentToScheduleByStudent(studentId)
+    }
 
     companion object {
         private var INSTANCE: AppRepository? = null

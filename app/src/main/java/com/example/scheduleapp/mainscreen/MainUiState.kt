@@ -9,10 +9,11 @@ import java.util.Date
 data class MainUiState(
     val isLoading: Boolean = false,
     val currentStudent: Student? = null,
-    val currentSchedule: Schedule? = null,
+    val currentSchedule: Int = -1,
+    val usersSchedules: List<Schedule> = emptyList(),
+    val mainScheduleId: Int = -1,
     val currentDate: Date = Calendar.getInstance().time,
     val currentDay: DaysOfWeek = convertToLocalDaysOfWeek(Calendar.DAY_OF_WEEK),
-    val test: String = "First"
 )
 
 private fun convertToLocalDaysOfWeek(day: Int): DaysOfWeek {

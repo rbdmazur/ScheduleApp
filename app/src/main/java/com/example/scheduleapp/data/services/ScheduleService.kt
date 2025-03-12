@@ -23,6 +23,9 @@ class ScheduleService {
         repository.deleteSchedule(schedule)
     }
 
+    suspend fun getStudentToScheduleByStudent(studentId: UUID): List<StudentToSchedule> =
+        repository.getStudentToScheduleByStudent(studentId)
+
     suspend fun addScheduleToStudent(studentToSchedule: StudentToSchedule) {
         repository.addScheduleToStudent(studentToSchedule)
     }

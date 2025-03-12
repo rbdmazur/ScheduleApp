@@ -32,6 +32,9 @@ interface ScheduleDao {
     @Delete
     suspend fun deleteScheduleFromStudent(studentToSchedule: StudentToSchedule)
 
+    @Query("SELECT * FROM studenttoschedule WHERE userId=(:studentId)")
+    suspend fun getStudentToScheduleByStudent(studentId: UUID): List<StudentToSchedule>
+
     @Transaction
     @Query("SELECT * FROM student WHERE userId=(:id)")
     fun getSchedulesForStudent(id: UUID): StudentWithSchedule?
