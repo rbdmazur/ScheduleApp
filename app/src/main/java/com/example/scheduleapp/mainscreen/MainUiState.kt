@@ -7,6 +7,7 @@ import java.util.Calendar
 import java.util.Date
 
 data class MainUiState(
+    val isLoading: Boolean = false,
     val currentStudent: Student? = null,
     val currentSchedule: Schedule? = null,
     val currentDate: Date = Calendar.getInstance().time,

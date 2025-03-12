@@ -21,8 +21,10 @@ import com.example.scheduleapp.ui.theme.ScheduleAppTheme
 import com.example.scheduleapp.utils.LoginScreenRoute
 import com.example.scheduleapp.utils.MainScreenRoute
 import com.example.scheduleapp.utils.ScheduleScreenRoute
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.UUID
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

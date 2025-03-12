@@ -8,8 +8,5 @@ import java.util.UUID
 data class Student(
     @PrimaryKey val userId: UUID,
     val name: String,
-    val facultyId: Int,
-    val specialization: String,
-    val course: Int,
-    val group: Int
+    val infoId: Int
 )

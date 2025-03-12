@@ -29,7 +29,7 @@ import com.example.scheduleapp.ui.theme.gold
 fun DrawerMenu(viewModel: MainViewModel) {
     val state by viewModel.mainUiState.collectAsState()
     ModalDrawerSheet(
-        modifier = Modifier.fillMaxWidth(0.6f),
+        modifier = Modifier.fillMaxWidth(0.7f),
         drawerContainerColor = darkBlue,
         drawerContentColor = Color.White
     ) {

@@ -1,6 +1,5 @@
 package com.example.scheduleapp.login
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,8 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.scheduleapp.R
+import com.example.scheduleapp.remote.auth.AuthResult
+import com.example.scheduleapp.remote.auth.UserData
 import com.example.scheduleapp.ui.theme.Typography
 import com.example.scheduleapp.ui.theme.blue
 import com.example.scheduleapp.ui.theme.darkBlue
@@ -48,18 +51,32 @@ import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.redError
 import com.example.scheduleapp.ui.theme.whiteAlpha
 import com.example.scheduleapp.utils.LoadingState
-import java.util.UUID
 
 @Preview(showBackground = true)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = viewModel(),
+    viewModel: LoginViewModel = hiltViewModel(),
     toMainScreen: (String) -> Unit
     ) {
     val emailInput = remember { mutableStateOf("") }
     val passwordInput = remember { mutableStateOf("") }
     val loginUiState by viewModel.loginUiState.collectAsState()
+    LaunchedEffect(loginUiState) {
+        when(loginUiState) {
+            is AuthResult.Authorized -> {
+                if (loginUiState.data != null) {
+                    toMainScreen(loginUiState.data.toString())
+                }
+            }
+            is AuthResult.Unauthorized -> {
+
+            }
+            is AuthResult.UnknownError -> {
+
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -84,11 +101,10 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
             PasswordTextField(passwordInput)
             Spacer(Modifier.height(32.dp))
-            if (loginUiState is LoadingState.Failure) {
-                loginUiState.message?.let { Text(it, color = redError) }
+            if (loginUiState is AuthResult.UnknownError) {
+                Text(loginUiState.message, color = redError)
                 Spacer(Modifier.height(32.dp))
             }
-            val context = LocalContext.current
             Button(
                 modifier = Modifier.fillMaxWidth(0.4f),
                 colors = ButtonDefaults.buttonColors(
@@ -96,9 +112,7 @@ fun LoginScreen(
                 ),
                 onClick = {
                     val userData = UserData(emailInput.value, passwordInput.value)
-                    viewModel.signIn(userData, context) {
-                        toMainScreen(it)
-                    }
+                    viewModel.signIn(userData)
                 }
             ) {
                 Text(
@@ -107,7 +121,6 @@ fun LoginScreen(
                     fontSize = 16.sp
                 )
             }
-
         }
     }
 }

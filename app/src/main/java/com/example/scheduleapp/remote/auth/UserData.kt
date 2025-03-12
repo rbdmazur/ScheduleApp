@@ -1,4 +1,4 @@
-package com.example.scheduleapp.login
+package com.example.scheduleapp.remote.auth
 
 data class UserData(
     val email: String,

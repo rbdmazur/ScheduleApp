@@ -1,4 +1,4 @@
-package com.example.scheduleapp.remote.model
+package com.example.scheduleapp.remote.auth
 
 data class AuthResponse(
     val userId: String,
