@@ -7,6 +7,9 @@ import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
 import com.example.scheduleapp.data.model.StudentWithSchedule
+import com.example.scheduleapp.data.model.Study
+import com.example.scheduleapp.data.model.Subject
+import com.example.scheduleapp.data.model.Teacher
 import com.example.scheduleapp.data.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -85,6 +88,45 @@ class AppRepository private constructor(context: Context) {
     }
     suspend fun getStudentToScheduleByStudent(studentId: UUID): List<StudentToSchedule> = withContext(Dispatchers.IO) {
         database.getScheduleDao().getStudentToScheduleByStudent(studentId)
+    }
+    //teacher
+    suspend fun getAllTeachers(): List<Teacher> = withContext(Dispatchers.IO) {
+        database.getTeacherDao().getAllTeachers()
+    }
+    suspend fun getTeacherById(id: UUID): Teacher? = withContext(Dispatchers.IO) {
+        database.getTeacherDao().getTeacherById(id)
+    }
+    suspend fun insertTeacher(teacher: Teacher) = withContext(Dispatchers.IO) {
+        database.getTeacherDao().insertTeacher(teacher)
+    }
+    suspend fun deleteTeacher(teacher: Teacher) = withContext(Dispatchers.IO) {
+        database.getTeacherDao().deleteTeacher(teacher)
+    }
+    //subject
+    suspend fun getAllSubjects(): List<Subject> = withContext(Dispatchers.IO) {
+        database.getSubjectDao().getAllSubjects()
+    }
+    suspend fun getSubjectById(id: Int): Subject? = withContext(Dispatchers.IO) {
+        database.getSubjectDao().getSubjectById(id)
+    }
+    suspend fun insertSubject(subject: Subject) = withContext(Dispatchers.IO) {
+        database.getSubjectDao().insertSubject(subject)
+    }
+    suspend fun deleteSubject(subject: Subject) = withContext(Dispatchers.IO) {
+        database.getSubjectDao().deleteSubject(subject)
+    }
+    //study
+    suspend fun getAllStudies(): List<Study> = withContext(Dispatchers.IO) {
+        database.getStudyDao().getAllStudies()
+    }
+    suspend fun getStudyById(id: Int): Study? = withContext(Dispatchers.IO) {
+        database.getStudyDao().getStudyById(id)
+    }
+    suspend fun insertStudy(study: Study) = withContext(Dispatchers.IO) {
+        database.getStudyDao().insertStudy(study)
+    }
+    suspend fun deleteStudy(study: Study) = withContext(Dispatchers.IO) {
+        database.getStudyDao().deleteStudy(study)
     }
 
     companion object {

@@ -1,4 +1,4 @@
-package com.example.scheduleapp.mainscreen.drawer
+package com.example.scheduleapp.mainscreen.barscontent
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

@@ -1,6 +1,8 @@
 package com.example.scheduleapp.mainscreen
 
 import android.database.SQLException
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,6 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
 import java.util.UUID
 
 @HiltViewModel(assistedFactory = MainViewModel.Factory::class)
@@ -37,11 +40,15 @@ class MainViewModel @AssistedInject constructor(
     private val _mainUiState = MutableStateFlow(MainUiState())
     val mainUiState = _mainUiState.asStateFlow()
 
+    private val _dateState = MutableStateFlow(DateState())
+    val dateState = _dateState.asStateFlow()
+
     private val userService = UserService()
     private val infoService = InfoService()
     private val scheduleService = ScheduleService()
 
     init {
+        loadDates()
         viewModelScope.launch {
             _mainUiState.value = _mainUiState.value.copy(isLoading = true)
             val student = loadStudent()
@@ -61,6 +68,35 @@ class MainViewModel @AssistedInject constructor(
                 mainScheduleId = mainSchedule?.scheduleId ?: -1
             )
         }
+    }
+
+    fun updateSelectedSchedule(index: Int) {
+        _mainUiState.value = _mainUiState.value.copy(currentSchedule = index)
+    }
+
+    fun updateSelectedDay(index: Int) {
+        _dateState.value = _dateState.value.copy(selectedDay = index)
+    }
+
+    private fun loadDates() {
+        val calendar = Calendar.getInstance(TimeZone.GMT_ZONE)
+        calendar.firstDayOfWeek = Calendar.MONDAY
+        val currentDate = calendar.time
+        val dates = ArrayList<Date>()
+        for (i in 0..5) {
+            var day = (2 + i) % 7
+            if (day == 0) day = 7
+            calendar.set(Calendar.DAY_OF_WEEK, day)
+            val time = calendar.time
+            dates.add(time)
+            Log.d("DATE", DateFormat.barTitleFormat.format(time))
+        }
+        val currentDateIndex = dates.indexOfFirst {
+            DateFormat.barTitleFormat.format(it) == DateFormat.barTitleFormat.format(currentDate)
+        }
+        Log.d("DATE", currentDateIndex.toString())
+
+        _dateState.value = DateState(dates = dates.toList(), selectedDay = currentDateIndex)
     }
 
     private suspend fun loadSchedules(): List<Schedule> {
@@ -92,10 +128,6 @@ class MainViewModel @AssistedInject constructor(
             )
             scheduleService.addScheduleToStudent(studentToSchedule)
         }
-    }
-
-    fun updateSelectedSchedule(index: Int) {
-        _mainUiState.value = _mainUiState.value.copy(currentSchedule = index)
     }
 
     private suspend fun loadStudent(): Student? {
