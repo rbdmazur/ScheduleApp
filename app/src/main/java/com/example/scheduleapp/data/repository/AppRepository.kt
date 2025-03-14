@@ -8,6 +8,7 @@ import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
 import com.example.scheduleapp.data.model.StudentWithSchedule
 import com.example.scheduleapp.data.model.Study
+import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
 import com.example.scheduleapp.data.model.Subject
 import com.example.scheduleapp.data.model.Teacher
 import com.example.scheduleapp.data.model.User
@@ -128,6 +129,10 @@ class AppRepository private constructor(context: Context) {
     suspend fun deleteStudy(study: Study) = withContext(Dispatchers.IO) {
         database.getStudyDao().deleteStudy(study)
     }
+    suspend fun getStudiesWithSubjectAndTeacherForSchedule(scheduleId: Int): List<StudyWithTeacherAndSubject> =
+        withContext(Dispatchers.IO) {
+            database.getStudyDao().getStudiesWithSubjectAndTeachersForSchedule(scheduleId)
+        }
 
     companion object {
         private var INSTANCE: AppRepository? = null

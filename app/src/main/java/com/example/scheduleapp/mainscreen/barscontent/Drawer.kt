@@ -59,7 +59,7 @@ fun DrawerMenu(viewModel: MainViewModel) {
                 state.usersSchedules.forEachIndexed { index, item ->
                     ScheduleMenuItem(
                         item.title,
-                        state.currentSchedule == index,
+                        state.currentScheduleIndex == index,
                         state.mainScheduleId == item.scheduleId
                     ) {
                         viewModel.updateSelectedSchedule(index)

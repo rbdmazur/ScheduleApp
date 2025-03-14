@@ -4,6 +4,7 @@ import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.StudentToSchedule
 import com.example.scheduleapp.data.model.StudentWithSchedule
 import com.example.scheduleapp.data.model.Study
+import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
 import com.example.scheduleapp.data.model.Subject
 import com.example.scheduleapp.data.repository.AppRepository
 import java.util.UUID
@@ -61,4 +62,6 @@ class ScheduleService {
     suspend fun deleteStudy(study: Study) {
         repository.deleteStudy(study)
     }
+    suspend fun getStudiesWithSubjectAndTeacherForSchedule(scheduleId: Int): List<StudyWithTeacherAndSubject> =
+        repository.getStudiesWithSubjectAndTeacherForSchedule(scheduleId)
 }
