@@ -11,6 +11,11 @@ data class MainScreenRoute(
     val id: String
 )
 
-
 @Serializable
 object ScheduleScreenRoute
+
+@Serializable
+object SubjectsScreenRoute
+
+@Serializable
+object ProfileScreenRoute

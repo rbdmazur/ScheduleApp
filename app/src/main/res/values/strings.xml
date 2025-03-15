@@ -7,4 +7,8 @@
     <string name="login_button">Login</string>
 
     <string name="drawer_hello">Hello, </string>
+
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_subjects">Subjects</string>
+    <string name="nav_profile">Profile</string>
 </resources>
