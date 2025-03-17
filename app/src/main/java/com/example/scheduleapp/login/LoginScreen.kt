@@ -1,6 +1,8 @@
 package com.example.scheduleapp.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,18 +31,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.scheduleapp.R
 import com.example.scheduleapp.remote.auth.AuthResult
 import com.example.scheduleapp.remote.auth.UserData
@@ -50,18 +51,17 @@ import com.example.scheduleapp.ui.theme.darkBlue
 import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.redError
 import com.example.scheduleapp.ui.theme.whiteAlpha
-import com.example.scheduleapp.utils.LoadingState
 
-@Preview(showBackground = true)
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     toMainScreen: (String) -> Unit
     ) {
     val emailInput = remember { mutableStateOf("") }
     val passwordInput = remember { mutableStateOf("") }
     val loginUiState by viewModel.loginUiState.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     LaunchedEffect(loginUiState) {
         when(loginUiState) {
             is AuthResult.Authorized -> {
@@ -80,7 +80,14 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(blue),
+            .background(blue)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            },
         contentAlignment = Alignment.Center,
     ) {
         Column(
