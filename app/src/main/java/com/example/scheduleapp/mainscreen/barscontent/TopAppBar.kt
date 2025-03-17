@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.example.scheduleapp.mainscreen.DateFormat
 import com.example.scheduleapp.mainscreen.MainViewModel
 
@@ -25,7 +27,9 @@ fun TopBar(
         title = {
             Text(
                 text = DateFormat.barTitleFormat.format(dateState.dates[dateState.selectedDay]),
-                color = Color.White
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Normal
             )
         },
         navigationIcon = {
