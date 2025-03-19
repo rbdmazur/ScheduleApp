@@ -24,7 +24,10 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
-fun MainScreen(idStr: String) {
+fun MainScreen(
+    idStr: String,
+    authError: () -> Unit
+) {
     val id = UUID.fromString(idStr)
 
     val mainViewModel = hiltViewModel<MainViewModel, MainViewModel.Factory>(
@@ -36,7 +39,7 @@ fun MainScreen(idStr: String) {
     ScheduleAppTheme {
         ModalNavigationDrawer(
             modifier = Modifier.fillMaxSize(),
-            drawerContent = { DrawerMenu(mainViewModel) },
+            drawerContent = { DrawerMenu(mainViewModel, authError) },
             drawerState = drawerState
         ) {
             Scaffold(

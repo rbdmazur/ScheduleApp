@@ -6,6 +6,7 @@ import android.icu.util.TimeZone
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.scheduleapp.data.model.Faculty
 import com.example.scheduleapp.data.model.Info
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
@@ -17,16 +18,22 @@ import com.example.scheduleapp.data.model.Teacher
 import com.example.scheduleapp.data.services.InfoService
 import com.example.scheduleapp.data.services.ScheduleService
 import com.example.scheduleapp.data.services.UserService
+import com.example.scheduleapp.mainscreen.dialogs.DialogState
+import com.example.scheduleapp.mainscreen.dialogs.ScheduleLazyColumnItem
 import com.example.scheduleapp.remote.ScheduleApiService
 import com.example.scheduleapp.remote.model.ScheduleResponse
+import com.example.scheduleapp.remote.model.ScheduleSimpleResponse
 import com.example.scheduleapp.remote.model.StudentRemote
 import com.example.scheduleapp.remote.model.StudyRemote
 import com.example.scheduleapp.remote.model.SubjectRemote
 import com.example.scheduleapp.remote.model.TeacherRemote
+import com.example.scheduleapp.remote.requests.ScheduleRequest
+import com.example.scheduleapp.remote.requests.ScheduleRequestList
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -51,6 +58,12 @@ class MainViewModel @AssistedInject constructor(
     private val _dateState = MutableStateFlow(DateState())
     val dateState = _dateState.asStateFlow()
 
+    private val _dialogState = MutableStateFlow(DialogState())
+    val dialogState = _dialogState.asStateFlow()
+
+    private val _faculties = MutableStateFlow(emptyList<Faculty>())
+    val faculties = _faculties.asStateFlow()
+
     private val userService = UserService()
     private val infoService = InfoService()
     private val scheduleService = ScheduleService()
@@ -58,25 +71,39 @@ class MainViewModel @AssistedInject constructor(
     init {
         loadDates()
         viewModelScope.launch {
-            _mainUiState.value = _mainUiState.value.copy(isLoading = true)
-            val student = loadStudent()
-            val schedules = loadSchedules()
-            val studentToSchedule = scheduleService.getStudentToScheduleByStudent(id)
-            val mainSchedule = studentToSchedule.find {
-                it.isMain
+            try {
+                _mainUiState.value = _mainUiState.value.copy(isLoading = true)
+                val student = loadStudent()
+                val schedules = loadSchedules()
+                val studentToSchedule = scheduleService.getStudentToScheduleByStudent(id)
+                val mainSchedule = studentToSchedule.find {
+                    it.isMain
+                }
+                val currentScheduleIndex =
+                    if(mainSchedule == null) 0
+                    else schedules.indexOfFirst { it.scheduleId == mainSchedule.scheduleId }
+                val studies = loadStudies(schedules[currentScheduleIndex].scheduleId)
+                _mainUiState.value = _mainUiState.value.copy(
+                    isLoading = false,
+                    currentStudent = student,
+                    usersSchedules = schedules,
+                    currentScheduleIndex = currentScheduleIndex,
+                    mainScheduleId = mainSchedule?.scheduleId ?: -1,
+                    currentStudies = studies
+                )
+            } catch (e: HttpException) {
+                Log.d("MVM", "Code: ${e.code()}")
             }
-            val currentScheduleIndex =
-                if(mainSchedule == null) 0
-                else schedules.indexOfFirst { it.scheduleId == mainSchedule.scheduleId }
-            val studies = loadStudies(schedules[currentScheduleIndex].scheduleId)
-            _mainUiState.value = _mainUiState.value.copy(
-                isLoading = false,
-                currentStudent = student,
-                usersSchedules = schedules,
-                currentScheduleIndex = currentScheduleIndex,
-                mainScheduleId = mainSchedule?.scheduleId ?: -1,
-                currentStudies = studies
-            )
+
+        }
+    }
+
+    fun loadFaculties() {
+        viewModelScope.launch {
+            _faculties.value = apiService
+                .getFaculties()
+                .faculties
+                .map { Faculty(it.id.toInt(), it.title, it.fullTitle) }
         }
     }
 
@@ -90,8 +117,62 @@ class MainViewModel @AssistedInject constructor(
         }
     }
 
+    fun addSelectedSchedules(schedules: List<Schedule>) {
+        viewModelScope.launch {
+            val result = ArrayList<Schedule>()
+            _mainUiState.value.usersSchedules.forEach {
+                result.add(it)
+            }
+
+            val request = ScheduleRequestList(
+                schedules.map { ScheduleRequest(it.scheduleId.toString(), false) }
+            )
+
+            apiService.addSchedulesToStudent(
+                id = _mainUiState.value.currentStudent!!.userId,
+                schedules = request
+            )
+
+            schedules.forEach {
+                scheduleService.insertSchedule(it)
+                scheduleService.addScheduleToStudent(
+                    StudentToSchedule(
+                        userId = _mainUiState.value.currentStudent!!.userId,
+                        scheduleId = it.scheduleId,
+                        isMain = false
+                    )
+                )
+                result.add(it)
+            }
+
+            _mainUiState.value = _mainUiState.value.copy(usersSchedules = result)
+        }
+    }
+
     fun updateSelectedDay(index: Int) {
         _dateState.value = _dateState.value.copy(selectedDay = index)
+    }
+
+    fun loadSchedulesForFilter(facultyId: Int?, course: Int?, group: Int?) {
+        if (_mainUiState.value.currentStudent == null) {
+            throw IllegalStateException()
+        }
+        viewModelScope.launch {
+            val response = apiService.getAvailableSchedules(
+                id = _mainUiState.value.currentStudent!!.userId,
+                facultyId = facultyId,
+                course = course,
+                group = group
+            )
+            val list = mapScheduleSimpleResponseToSchedule(response).map {
+                ScheduleLazyColumnItem(schedule = it)
+            }
+            _dialogState.value = _dialogState.value.copy(list = list)
+        }
+    }
+
+    fun updateDialogSelectedSchedule(list: List<ScheduleLazyColumnItem>) {
+        _dialogState.value = _dialogState.value.copy(list = list)
     }
 
     private fun loadDates() {
@@ -161,6 +242,20 @@ class MainViewModel @AssistedInject constructor(
             studentWithSchedules = scheduleService.getSchedulesForStudent(id)
         }
         return studentWithSchedules!!.schedules
+    }
+
+    private fun mapScheduleSimpleResponseToSchedule(response: ScheduleSimpleResponse): List<Schedule> {
+        val result = ArrayList<Schedule>()
+        response.schedules.forEach {
+            val schedule = Schedule(
+                scheduleId = it.id.toInt(),
+                title = it.title,
+                infoId = it.infoId.toInt(),
+                lastUpdate = it.lastUpdate.toLong()
+            )
+            result.add(schedule)
+        }
+        return result.toList()
     }
 
     private suspend fun mapScheduleResponseAndAddToDb(scheduleResponse: ScheduleResponse, userId: UUID) {

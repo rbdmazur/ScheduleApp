@@ -44,7 +44,22 @@ class AuthRepositoryImplementation(
             if (id == null) {
                 return AuthResult.Unauthorized()
             } else {
-                return AuthResult.Authorized(UUID.fromString(id))
+                try {
+                    val header = mapOf(
+                        "Authorization" to "Bearer $token"
+                    )
+                    authApiService.auth(header)
+                    return AuthResult.Authorized(UUID.fromString(id))
+                } catch (e: HttpException) {
+                    return if (e.code() == 401) {
+                        AuthResult.Unauthorized()
+                    } else {
+                        AuthResult.UnknownError()
+                    }
+
+                } catch (e: Exception) {
+                    return AuthResult.UnknownError()
+                }
             }
         }
     }

@@ -21,6 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,12 +31,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.scheduleapp.R
+import com.example.scheduleapp.mainscreen.dialogs.AddDialog
 import com.example.scheduleapp.mainscreen.MainViewModel
 import com.example.scheduleapp.ui.theme.darkBlue
 import com.example.scheduleapp.ui.theme.gold
 
 @Composable
-fun DrawerMenu(viewModel: MainViewModel) {
+fun DrawerMenu(viewModel: MainViewModel, authError: () -> Unit) {
     val state by viewModel.mainUiState.collectAsState()
     if (state.isLoading) {
         Box(
@@ -48,13 +52,14 @@ fun DrawerMenu(viewModel: MainViewModel) {
             drawerContainerColor = darkBlue,
             drawerContentColor = Color.White
         ) {
+            var showDialog by remember { mutableStateOf(false) }
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 val studentName = state.currentStudent?.name?.split(" ")?.get(1)
                 Spacer(Modifier.height(12.dp))
-                Text(stringResource(R.string.drawer_hello) + studentName, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp))
+                Text(stringResource(R.string.drawer_hello) + " $studentName", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp))
                 HorizontalDivider(color = gold)
                 state.usersSchedules.forEachIndexed { index, item ->
                     ScheduleMenuItem(
@@ -63,6 +68,24 @@ fun DrawerMenu(viewModel: MainViewModel) {
                         state.mainScheduleId == item.scheduleId
                     ) {
                         viewModel.updateSelectedSchedule(index)
+                    }
+                }
+                HorizontalDivider(color = gold)
+                Box(modifier = Modifier.fillMaxWidth().clickable {
+                    showDialog = true
+                },
+                contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Add schedule",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(20.dp),
+                        color = Color.White
+                    )
+                }
+
+                if(showDialog) {
+                    AddDialog(mainViewModel = viewModel, onAddClicked = { showDialog = false }, authError = authError) {
+                        showDialog = false
                     }
                 }
             }

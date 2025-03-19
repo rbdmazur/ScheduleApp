@@ -6,9 +6,18 @@
     <string name="password">Password</string>
     <string name="login_button">Login</string>
 
-    <string name="drawer_hello">Hello, </string>
+    <string name="drawer_hello">Hello,</string>
 
     <string name="nav_schedule">Schedule</string>
     <string name="nav_subjects">Subjects</string>
     <string name="nav_profile">Profile</string>
+
+    <string name="dialog_choose">Choose schedule</string>
+    <string name="dialog_add">Add</string>
+    <string name="dialog_filter">Filter</string>
+    <string name="dialog_faculty">Faculty</string>
+    <string name="dialog_course">Course</string>
+    <string name="dialog_group">Group</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_filter_choose">Choose</string>
 </resources>
