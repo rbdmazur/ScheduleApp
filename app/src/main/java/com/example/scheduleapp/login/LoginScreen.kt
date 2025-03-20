@@ -10,12 +10,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -41,6 +46,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.scheduleapp.R
 import com.example.scheduleapp.remote.auth.AuthResult
@@ -62,6 +68,7 @@ fun LoginScreen(
     val loginUiState by viewModel.loginUiState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val networkDialogShow = remember { mutableStateOf(false) }
     LaunchedEffect(loginUiState) {
         when(loginUiState) {
             is AuthResult.Authorized -> {
@@ -74,6 +81,9 @@ fun LoginScreen(
             }
             is AuthResult.UnknownError -> {
 
+            }
+            is AuthResult.AuthorizedOffline -> {
+                networkDialogShow.value = true
             }
         }
     }
@@ -127,6 +137,15 @@ fun LoginScreen(
                     color = Color.White,
                     fontSize = 16.sp
                 )
+            }
+        }
+    }
+
+    if (networkDialogShow.value) {
+        NetworkDialog {
+            networkDialogShow.value = false
+            if (loginUiState.data != null) {
+                toMainScreen(loginUiState.data.toString())
             }
         }
     }
@@ -207,4 +226,30 @@ fun PasswordTextField(input: MutableState<String>) {
         modifier = Modifier
             .fillMaxWidth(0.75f)
     )
+}
+
+@Composable
+fun NetworkDialog(onDismissRequest: () -> Unit) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = blue,
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                text = stringResource(R.string.network_alert),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .wrapContentSize(Alignment.Center),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }

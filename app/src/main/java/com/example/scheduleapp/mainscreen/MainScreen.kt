@@ -1,5 +1,10 @@
 package com.example.scheduleapp.mainscreen
 
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
@@ -9,6 +14,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +39,30 @@ fun MainScreen(
     val mainViewModel = hiltViewModel<MainViewModel, MainViewModel.Factory>(
         creationCallback = { factory -> factory.create(id = id) }
     )
+
+    val networkRequest = NetworkRequest.Builder()
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        .build()
+
+    val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            mainViewModel.setNetworkState(true)
+            Log.d("NET", "True")
+        }
+
+        override fun onLost(network: Network) {
+            super.onLost(network)
+            mainViewModel.setNetworkState(false)
+            Log.d("NET", "False")
+        }
+    }
+
+    val connectivityManager = LocalContext.current.getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+    connectivityManager.requestNetwork(networkRequest, networkCallback)
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()

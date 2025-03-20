@@ -20,4 +20,9 @@
     <string name="dialog_group">Group</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_filter_choose">Choose</string>
+
+    <string name="network_alert">Network connection is failed. You are in offline mode now.</string>
+
+    <string name="drawer_add">Add schedule</string>
+    <string name="offline_mode">Offline mode</string>
 </resources>

@@ -33,7 +33,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -64,6 +63,9 @@ class MainViewModel @AssistedInject constructor(
     private val _faculties = MutableStateFlow(emptyList<Faculty>())
     val faculties = _faculties.asStateFlow()
 
+    private val _networkConnection = MutableStateFlow(false)
+    val networkConnection = _networkConnection.asStateFlow()
+
     private val userService = UserService()
     private val infoService = InfoService()
     private val scheduleService = ScheduleService()
@@ -72,29 +74,42 @@ class MainViewModel @AssistedInject constructor(
         loadDates()
         viewModelScope.launch {
             try {
-                _mainUiState.value = _mainUiState.value.copy(isLoading = true)
-                val student = loadStudent()
-                val schedules = loadSchedules()
-                val studentToSchedule = scheduleService.getStudentToScheduleByStudent(id)
-                val mainSchedule = studentToSchedule.find {
-                    it.isMain
-                }
-                val currentScheduleIndex =
-                    if(mainSchedule == null) 0
-                    else schedules.indexOfFirst { it.scheduleId == mainSchedule.scheduleId }
-                val studies = loadStudies(schedules[currentScheduleIndex].scheduleId)
-                _mainUiState.value = _mainUiState.value.copy(
-                    isLoading = false,
-                    currentStudent = student,
-                    usersSchedules = schedules,
-                    currentScheduleIndex = currentScheduleIndex,
-                    mainScheduleId = mainSchedule?.scheduleId ?: -1,
-                    currentStudies = studies
-                )
+                loadData()
             } catch (e: HttpException) {
                 Log.d("MVM", "Code: ${e.code()}")
             }
 
+        }
+    }
+
+    private suspend fun loadData() {
+        _mainUiState.value = _mainUiState.value.copy(isLoading = true)
+        val student = loadStudent()
+        val schedules = loadSchedules()
+        val studentToSchedule = scheduleService.getStudentToScheduleByStudent(id)
+        val mainSchedule = studentToSchedule.find {
+            it.isMain
+        }
+        val currentScheduleIndex =
+            if(mainSchedule == null) 0
+            else schedules.indexOfFirst { it.scheduleId == mainSchedule.scheduleId }
+        val studies = loadStudies(schedules[currentScheduleIndex].scheduleId)
+        _mainUiState.value = _mainUiState.value.copy(
+            isLoading = false,
+            currentStudent = student,
+            usersSchedules = schedules,
+            currentScheduleIndex = currentScheduleIndex,
+            mainScheduleId = mainSchedule?.scheduleId ?: -1,
+            currentStudies = studies
+        )
+    }
+
+    fun setNetworkState(state: Boolean) {
+        _networkConnection.value = state
+        if (state) {
+            viewModelScope.launch {
+                loadData()
+            }
         }
     }
 
@@ -198,7 +213,7 @@ class MainViewModel @AssistedInject constructor(
 
     private suspend fun loadStudies(scheduleId: Int): List<StudyWithTeacherAndSubject> {
         var studies = scheduleService.getStudiesWithSubjectAndTeacherForSchedule(scheduleId)
-        if (studies.isEmpty()) {
+        if (networkConnection.value) {
             try {
                 val studiesResponse = apiService.getStudiesForSchedule(scheduleId)
                 studiesResponse.studies.forEach {
@@ -206,21 +221,14 @@ class MainViewModel @AssistedInject constructor(
                     val teacher = teacherFromTeacherRemote(it.teacher)
                     val study = studyFromStudyRemote(it)
 
-                    try {
+                    insert {
                         scheduleService.insertSubject(subject)
-                    } catch(e: SQLException) {
-                        Log.d("SQL", "Already added")
                     }
-
-                    try {
+                    insert {
                         userService.insertTeacher(teacher)
-                    } catch (e: SQLException) {
-                        Log.d("SQL", "Already added")
                     }
-                    try {
+                    insert {
                         scheduleService.insertStudy(study)
-                    } catch(e: SQLException) {
-                        Log.d("SQL", "Already added")
                     }
 
                     studies = scheduleService.getStudiesWithSubjectAndTeacherForSchedule(scheduleId)
@@ -235,7 +243,7 @@ class MainViewModel @AssistedInject constructor(
     private suspend fun loadSchedules(): List<Schedule> {
         var studentWithSchedules = scheduleService.getSchedulesForStudent(id)
         Log.d("RESP", studentWithSchedules.toString())
-        if (studentWithSchedules != null && studentWithSchedules.schedules.isEmpty()) {
+        if (networkConnection.value) {
             val scheduleResponse = apiService.getSchedules()
             Log.d("RESP", scheduleResponse.toString())
             mapScheduleResponseAndAddToDb(scheduleResponse, id)
@@ -267,35 +275,48 @@ class MainViewModel @AssistedInject constructor(
                 lastUpdate = scheduleRemote.lastUpdate.toLong(),
                 infoId = scheduleRemote.infoId.toInt()
             )
-            scheduleService.insertSchedule(schedule)
+            insert {
+                scheduleService.insertSchedule(schedule)
+            }
             val studentToSchedule = StudentToSchedule(
                 userId = userId,
                 scheduleId = schedule.scheduleId,
                 isMain = scheduleRem.isMain.toBoolean()
             )
-            scheduleService.addScheduleToStudent(studentToSchedule)
+            insert {
+                scheduleService.addScheduleToStudent(studentToSchedule)
+            }
         }
     }
 
     private suspend fun loadStudent(): Student? {
         var student = userService.getStudentById(id)
-        if (student == null) {
+        if (networkConnection.value) {
             try {
                 val studentResponse = apiService.getStudent(id)
                 val info = studentResponseToInfo(studentResponse)
-                try {
+                insert {
                     infoService.insertInfo(info)
-                } catch(e: SQLException) {
-                    Log.d("INFOSQL", "This info is added")
                 }
                 student = studentResponseToStudentModel(studentResponse, info)
-                userService.insertStudent(student)
+                insert {
+                    userService.insertStudent(student)
+                }
             } catch(e: Exception) {
                 Log.d("MAINSCREEN", e.message.toString())
             }
         }
         return student
     }
+
+    private suspend fun insert(action: suspend () -> Unit) {
+        try {
+            action()
+        } catch (e: SQLException) {
+            Log.d("SQL", "This object is added")
+        }
+    }
+
     private fun subjectFromSubjectRemote(remote: SubjectRemote): Subject =
         Subject(
             id = remote.id.toInt(),
@@ -303,6 +324,7 @@ class MainViewModel @AssistedInject constructor(
             shortTitle = remote.shortTitle,
             infoId = remote.infoId.toInt()
         )
+
     private fun teacherFromTeacherRemote(remote: TeacherRemote): Teacher =
         Teacher(
             userId = UUID.fromString(remote.userId),
@@ -310,6 +332,7 @@ class MainViewModel @AssistedInject constructor(
             academicTitle = remote.academicTitle,
             facultyId = remote.facultyId.toInt()
         )
+
     private fun studyFromStudyRemote(remote: StudyRemote): Study =
         Study(
             id = remote.id.toInt(),
@@ -322,6 +345,7 @@ class MainViewModel @AssistedInject constructor(
             teacherId = UUID.fromString(remote.teacher.userId),
             scheduleId = remote.scheduleId.toInt()
         )
+
     private fun studentResponseToInfo(studentRemote: StudentRemote): Info =
         Info(
             id = studentRemote.info.id.toInt(),
@@ -330,6 +354,7 @@ class MainViewModel @AssistedInject constructor(
             course = studentRemote.info.course.toInt(),
             group = studentRemote.info.group.toInt()
         )
+
     private fun studentResponseToStudentModel(studentRemote: StudentRemote, info: Info): Student =
         Student(
             userId = UUID.fromString(studentRemote.userId),

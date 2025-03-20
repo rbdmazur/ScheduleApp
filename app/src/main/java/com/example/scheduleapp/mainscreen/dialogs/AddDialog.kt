@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -111,8 +114,16 @@ fun AddDialog(
                 contentColor = Color.White
             )
         ) {
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                },
                 horizontalAlignment = Alignment.End
             ) {
                 if (!filterState.value.isFilterClicked) {
@@ -207,6 +218,9 @@ fun AddDialog(
                         )
                     }
                 } else {
+                    var faculty by remember { mutableStateOf(filterState.value.faculty) }
+                    var course by remember { mutableStateOf(filterState.value.course.toString()) }
+                    var group by remember { mutableStateOf(filterState.value.group.toString()) }
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -226,7 +240,14 @@ fun AddDialog(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            IconButton(onClick = { filterState.value = filterState.value.copy(isFilterClicked = false) }) {
+                            IconButton(onClick = {
+                                filterState.value = filterState.value.copy(
+                                    faculty = faculty,
+                                    course = course.toIntOrNull(),
+                                    group = group.toIntOrNull(),
+                                    isFilterClicked = false
+                                )
+                            }) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "",  tint = Color.White)
                             }
                         }
@@ -248,11 +269,9 @@ fun AddDialog(
                         } catch (e: Exception) {
                             Log.e("DIALOG", e.message, e)
                         }
-                        var faculty by remember { mutableStateOf(filterState.value.faculty) }
                         FilterRowFaculty(faculties, faculty) { index ->
                             faculty = faculties[index]
                         }
-                        var course by remember { mutableStateOf(filterState.value.course.toString()) }
                         val courseLabel = stringResource(R.string.dialog_course)
                         NumberFilterRow(
                             label = courseLabel,
@@ -260,7 +279,6 @@ fun AddDialog(
                         ) {
                             course = it
                         }
-                        var group by remember { mutableStateOf(filterState.value.group.toString()) }
                         val groupLabel = stringResource(R.string.dialog_group)
                         NumberFilterRow(
                             label = groupLabel,

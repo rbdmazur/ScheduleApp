@@ -39,6 +39,7 @@ import com.example.scheduleapp.ui.theme.gold
 @Composable
 fun DrawerMenu(viewModel: MainViewModel, authError: () -> Unit) {
     val state by viewModel.mainUiState.collectAsState()
+    val networkState by viewModel.networkConnection.collectAsState()
     if (state.isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -71,12 +72,14 @@ fun DrawerMenu(viewModel: MainViewModel, authError: () -> Unit) {
                     }
                 }
                 HorizontalDivider(color = gold)
-                Box(modifier = Modifier.fillMaxWidth().clickable {
+                Box(modifier = Modifier.fillMaxWidth().clickable(
+                    enabled = networkState
+                ) {
                     showDialog = true
                 },
                 contentAlignment = Alignment.Center) {
                     Text(
-                        text = "Add schedule",
+                        text = if(networkState) stringResource(R.string.drawer_add) else stringResource(R.string.offline_mode),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(20.dp),
                         color = Color.White
