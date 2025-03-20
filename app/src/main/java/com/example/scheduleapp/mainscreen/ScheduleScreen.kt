@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -54,7 +56,17 @@ fun ScheduleScreen(modifier: Modifier, mainViewModel: MainViewModel) {
         DayRow(dateState) {index ->
             mainViewModel.updateSelectedDay(index)
         }
-        ScheduleContent(state.currentStudies, dateState)
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            ScheduleContent(state.currentStudies, dateState)
+        }
+
     }
 }
 
@@ -68,6 +80,7 @@ fun DayRow(state: DateState,  onItemClicked: (Int) -> Unit) {
             )
             .background(blue)
             .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 12.dp, bottomEnd = 12.dp))
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),

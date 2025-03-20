@@ -80,4 +80,6 @@ dependencies {
 //    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    implementation ("androidx.compose.foundation:foundation")
 }

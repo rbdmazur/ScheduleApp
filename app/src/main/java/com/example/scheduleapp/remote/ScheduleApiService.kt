@@ -7,6 +7,7 @@ import com.example.scheduleapp.remote.model.StudentRemote
 import com.example.scheduleapp.remote.model.StudiesResponse
 import com.example.scheduleapp.remote.requests.ScheduleRequestList
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -23,6 +24,9 @@ interface ScheduleApiService {
 
     @GET("/schedules/{scheduleId}")
     suspend fun getStudiesForSchedule(@Path("scheduleId") scheduleId: Int): StudiesResponse
+
+    @DELETE("/schedules/{scheduleId}")
+    suspend fun deleteScheduleFromStudent(@Path("scheduleId") scheduleId: Int)
 
     @GET("/all-schedules/{userId}")
     suspend fun getAvailableSchedules(

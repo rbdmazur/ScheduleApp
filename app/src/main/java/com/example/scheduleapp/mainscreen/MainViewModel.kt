@@ -122,6 +122,29 @@ class MainViewModel @AssistedInject constructor(
         }
     }
 
+    fun removeSchedule(schedule: Schedule) {
+        viewModelScope.launch {
+            val toDelete = StudentToSchedule(
+                userId = mainUiState.value.currentStudent!!.userId,
+                scheduleId = schedule.scheduleId,
+                isMain = false
+            )
+            try {
+                val newSchedules = _mainUiState.value.usersSchedules.filter { it.scheduleId != schedule.scheduleId }
+                _mainUiState.value = _mainUiState.value.copy(
+                    usersSchedules = newSchedules
+                )
+                updateSelectedSchedule(0)
+                scheduleService.deleteScheduleFromStudent(toDelete)
+                apiService.deleteScheduleFromStudent(scheduleId = schedule.scheduleId)
+            } catch (e: HttpException) {
+                Log.d("DELETE", e.message())
+            } catch (e: Exception) {
+                Log.d("DELETE", e.message.toString())
+            }
+        }
+    }
+
     fun updateSelectedSchedule(index: Int) {
         viewModelScope.launch {
             val currentScheduleId = _mainUiState.value.usersSchedules[index].scheduleId
@@ -149,7 +172,9 @@ class MainViewModel @AssistedInject constructor(
             )
 
             schedules.forEach {
-                scheduleService.insertSchedule(it)
+                insert {
+                    scheduleService.insertSchedule(it)
+                }
                 scheduleService.addScheduleToStudent(
                     StudentToSchedule(
                         userId = _mainUiState.value.currentStudent!!.userId,
