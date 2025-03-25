@@ -2,7 +2,10 @@ package com.example.scheduleapp.data.repository
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.scheduleapp.data.dao.InfoDao
+import com.example.scheduleapp.data.dao.NotificationDao
 import com.example.scheduleapp.data.dao.ScheduleDao
 import com.example.scheduleapp.data.dao.StudentDao
 import com.example.scheduleapp.data.dao.StudyDao
@@ -10,6 +13,8 @@ import com.example.scheduleapp.data.dao.SubjectDao
 import com.example.scheduleapp.data.dao.TeacherDao
 import com.example.scheduleapp.data.dao.UserDao
 import com.example.scheduleapp.data.model.Info
+import com.example.scheduleapp.data.model.Note
+import com.example.scheduleapp.data.model.Notification
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
@@ -28,7 +33,9 @@ import com.example.scheduleapp.data.model.User
         Info::class,
         Teacher::class,
         Subject::class,
-        Study::class
+        Study::class,
+        Note::class,
+        Notification::class
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,5 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getTeacherDao(): TeacherDao
     abstract fun getSubjectDao(): SubjectDao
     abstract fun getStudyDao(): StudyDao
+    abstract fun getNotificationDao(): NotificationDao
 }
+
 

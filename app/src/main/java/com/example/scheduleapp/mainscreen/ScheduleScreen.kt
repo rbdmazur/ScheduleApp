@@ -43,6 +43,7 @@ import com.example.scheduleapp.ui.theme.blue
 import com.example.scheduleapp.ui.theme.darkBlue
 import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.whiteAlpha
+import com.example.scheduleapp.utils.DateFormats
 import com.example.scheduleapp.utils.DaysOfWeek
 import java.util.Calendar
 import java.util.Date
@@ -97,7 +98,7 @@ fun DayRow(state: DateState,  onItemClicked: (Int) -> Unit) {
 @Composable
 fun DayRowItem(date: Date, isSelected: Boolean, onItemClicked: () -> Unit) {
     val textSize = 24.sp
-    val dateStr = DateFormat.dateRowFormat.format(date)
+    val dateStr = DateFormats.dateRowFormat.format(date)
     val color = if (isSelected) gold else whiteAlpha
     val splited = dateStr.split(", ")
     val dayNum = splited[0]

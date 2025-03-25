@@ -25,4 +25,16 @@
 
     <string name="drawer_add">Add schedule</string>
     <string name="offline_mode">Offline mode</string>
+
+    <string name="subjects_subjects_title">Subjects</string>
+    <string name="subjects_notification">Notifications</string>
+    <string name="subjects_notification_alert">You haven\'t any notifications now.\nYou can add notification by click on the button</string>
+
+    <string name="notifications_title">Add notification</string>
+    <string name="notification_subject">Subject:</string>
+    <string name="notification_title">Title:</string>
+    <string name="notification_date">Date:</string>
+    <string name="notification_select_subject">Select subject</string>
+    <string name="notification_select_date">Select date</string>
+    <string name="notification_error">Please, don\'t select date before current.</string>
 </resources>

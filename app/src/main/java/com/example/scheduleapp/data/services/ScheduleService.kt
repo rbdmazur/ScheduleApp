@@ -14,29 +14,22 @@ class ScheduleService {
 
     suspend fun getAllSchedules(): List<Schedule> =
         repository.getAllSchedules()
-
     suspend fun getScheduleById(id: Int): Schedule? =
         repository.getScheduleById(id)
-
     suspend fun insertSchedule(schedule: Schedule) {
         repository.insertSchedule(schedule)
     }
-
     suspend fun deleteSchedule(schedule: Schedule) {
         repository.deleteSchedule(schedule)
     }
-
     suspend fun getStudentToScheduleByStudent(studentId: UUID): List<StudentToSchedule> =
         repository.getStudentToScheduleByStudent(studentId)
-
     suspend fun addScheduleToStudent(studentToSchedule: StudentToSchedule) {
         repository.addScheduleToStudent(studentToSchedule)
     }
-
     suspend fun deleteScheduleFromStudent(studentToSchedule: StudentToSchedule) {
         repository.deleteScheduleFromStudent(studentToSchedule)
     }
-
     suspend fun getSchedulesForStudent(id: UUID): StudentWithSchedule? =
         repository.getSchedulesForStudent(id)
 
@@ -51,6 +44,8 @@ class ScheduleService {
     suspend fun deleteSubject(subject: Subject) {
         repository.deleteSubject(subject)
     }
+    suspend fun getAllSubjectsByInfoId(infoId: Int): List<Subject> =
+        repository.getAllSubjectsByInfoId(infoId)
     //study
     suspend fun getAllStudies(): List<Study> =
         repository.getAllStudies()

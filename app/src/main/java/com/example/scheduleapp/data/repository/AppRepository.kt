@@ -3,6 +3,8 @@ package com.example.scheduleapp.data.repository
 import android.content.Context
 import androidx.room.Room
 import com.example.scheduleapp.data.model.Info
+import com.example.scheduleapp.data.model.Notification
+import com.example.scheduleapp.data.model.NotificationData
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
@@ -116,6 +118,9 @@ class AppRepository private constructor(context: Context) {
     suspend fun deleteSubject(subject: Subject) = withContext(Dispatchers.IO) {
         database.getSubjectDao().deleteSubject(subject)
     }
+    suspend fun getAllSubjectsByInfoId(infoId: Int): List<Subject> = withContext(Dispatchers.IO) {
+        database.getSubjectDao().getAllSubjectsByInfoId(infoId)
+    }
     //study
     suspend fun getAllStudies(): List<Study> = withContext(Dispatchers.IO) {
         database.getStudyDao().getAllStudies()
@@ -133,6 +138,20 @@ class AppRepository private constructor(context: Context) {
         withContext(Dispatchers.IO) {
             database.getStudyDao().getStudiesWithSubjectAndTeachersForSchedule(scheduleId)
         }
+
+    //notification
+    suspend fun getAllNotifications(userId: UUID): List<Notification> = withContext(Dispatchers.IO) {
+        database.getNotificationDao().getAllNotifications(userId)
+    }
+    suspend fun getNotificationById(id: Int): Notification? = withContext(Dispatchers.IO) {
+        database.getNotificationDao().getNotificationById(id)
+    }
+    suspend fun insertNotification(notificationData: NotificationData) = withContext(Dispatchers.IO) {
+        database.getNotificationDao().insertNotification(notificationData)
+    }
+    suspend fun deleteNotification(notification: Notification) = withContext(Dispatchers.IO) {
+        database.getNotificationDao().deleteNotification(notification)
+    }
 
     companion object {
         private var INSTANCE: AppRepository? = null

@@ -19,4 +19,7 @@ interface SubjectDao {
 
     @Delete
     suspend fun deleteSubject(subject: Subject)
+
+    @Query("SELECT * FROM subject WHERE infoId=(:infoId)")
+    suspend fun getAllSubjectsByInfoId(infoId: Int): List<Subject>
 }

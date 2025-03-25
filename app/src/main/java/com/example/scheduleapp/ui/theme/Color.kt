@@ -1,5 +1,6 @@
 package com.example.scheduleapp.ui.theme
 
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -19,3 +20,4 @@ val brownAlpha = Color(0xCC373226)
 val blueAlpha = Color(0x80081D3A)
 val whiteAlpha = Color(0x80FFFFFF)
 val redError = Color(0xFFBE3434)
+val blackAlpha = Color(0x80000000)

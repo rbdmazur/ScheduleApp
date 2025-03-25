@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scheduleapp.data.model.Faculty
 import com.example.scheduleapp.data.model.Info
+import com.example.scheduleapp.data.model.Notification
+import com.example.scheduleapp.data.model.NotificationData
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
@@ -16,10 +18,11 @@ import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
 import com.example.scheduleapp.data.model.Subject
 import com.example.scheduleapp.data.model.Teacher
 import com.example.scheduleapp.data.services.InfoService
+import com.example.scheduleapp.data.services.NotificationService
 import com.example.scheduleapp.data.services.ScheduleService
 import com.example.scheduleapp.data.services.UserService
-import com.example.scheduleapp.mainscreen.dialogs.DialogState
-import com.example.scheduleapp.mainscreen.dialogs.ScheduleLazyColumnItem
+import com.example.scheduleapp.mainscreen.adddialog.DialogState
+import com.example.scheduleapp.mainscreen.adddialog.ScheduleLazyColumnItem
 import com.example.scheduleapp.remote.ScheduleApiService
 import com.example.scheduleapp.remote.model.ScheduleResponse
 import com.example.scheduleapp.remote.model.ScheduleSimpleResponse
@@ -29,6 +32,7 @@ import com.example.scheduleapp.remote.model.SubjectRemote
 import com.example.scheduleapp.remote.model.TeacherRemote
 import com.example.scheduleapp.remote.requests.ScheduleRequest
 import com.example.scheduleapp.remote.requests.ScheduleRequestList
+import com.example.scheduleapp.utils.DateFormats
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -66,9 +70,16 @@ class MainViewModel @AssistedInject constructor(
     private val _networkConnection = MutableStateFlow(false)
     val networkConnection = _networkConnection.asStateFlow()
 
+    private val _subjects = MutableStateFlow(emptyList<Subject>())
+    val subjects = _subjects.asStateFlow()
+
+    private val _notifications = MutableStateFlow(emptyList<Notification>())
+    val notifications = _notifications.asStateFlow()
+
     private val userService = UserService()
     private val infoService = InfoService()
     private val scheduleService = ScheduleService()
+    private val notificationService = NotificationService()
 
     init {
         loadDates()
@@ -102,6 +113,41 @@ class MainViewModel @AssistedInject constructor(
             mainScheduleId = mainSchedule?.scheduleId ?: -1,
             currentStudies = studies
         )
+    }
+
+    fun loadSubjects() {
+        viewModelScope.launch {
+            val currentSt = _mainUiState.value.currentStudent
+            if (currentSt != null) {
+                _subjects.value = scheduleService.getAllSubjectsByInfoId(currentSt.infoId)
+            }
+        }
+    }
+
+    fun loadNotifications() {
+        viewModelScope.launch {
+            val currentSt = _mainUiState.value.currentStudent
+            if (currentSt != null) {
+                _notifications.value = notificationService.getAllNotifications(currentSt.userId)
+            }
+        }
+    }
+
+    fun addNotification(subject: Subject, title: String, date: Long) {
+        viewModelScope.launch {
+            val currentSt = _mainUiState.value.currentStudent
+            if (currentSt != null) {
+                notificationService.insertNotification(
+                    NotificationData(
+                        studentId = currentSt.userId,
+                        subjectId = subject.id,
+                        title = title,
+                        description = "",
+                        date = date
+                    )
+                )
+            }
+        }
     }
 
     fun setNetworkState(state: Boolean) {
@@ -226,10 +272,10 @@ class MainViewModel @AssistedInject constructor(
             calendar.set(Calendar.DAY_OF_WEEK, day)
             val time = calendar.time
             dates.add(time)
-            Log.d("DATE", DateFormat.barTitleFormat.format(time))
+            Log.d("DATE", DateFormats.barTitleFormat.format(time))
         }
         val currentDateIndex = dates.indexOfFirst {
-            DateFormat.barTitleFormat.format(it) == DateFormat.barTitleFormat.format(currentDate)
+            DateFormats.barTitleFormat.format(it) == DateFormats.barTitleFormat.format(currentDate)
         }
         Log.d("DATE", currentDateIndex.toString())
 

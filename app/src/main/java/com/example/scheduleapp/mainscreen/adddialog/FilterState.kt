@@ -1,4 +1,4 @@
-package com.example.scheduleapp.mainscreen.dialogs
+package com.example.scheduleapp.mainscreen.adddialog
 
 import com.example.scheduleapp.data.model.Faculty
 

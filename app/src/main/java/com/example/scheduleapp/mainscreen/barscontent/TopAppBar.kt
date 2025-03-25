@@ -13,8 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.scheduleapp.mainscreen.DateFormat
 import com.example.scheduleapp.mainscreen.MainViewModel
+import com.example.scheduleapp.utils.DateFormats
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +26,7 @@ fun TopBar(
     TopAppBar(
         title = {
             Text(
-                text = DateFormat.barTitleFormat.format(dateState.dates[dateState.selectedDay]),
+                text = DateFormats.barTitleFormat.format(dateState.dates[dateState.selectedDay]),
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Normal

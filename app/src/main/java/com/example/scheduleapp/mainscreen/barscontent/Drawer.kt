@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,7 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.scheduleapp.R
 import com.example.scheduleapp.mainscreen.MainViewModel
-import com.example.scheduleapp.mainscreen.dialogs.AddDialog
+import com.example.scheduleapp.mainscreen.adddialog.AddDialog
 import com.example.scheduleapp.ui.theme.darkBlue
 import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.redError
@@ -198,7 +196,6 @@ fun DeleteBackground(
             .padding(16.dp),
         contentAlignment = Alignment.CenterEnd
     ) {
-        Icon(Icons.Default.Delete, "Delete", tint = Color.White)
     }
 
 }

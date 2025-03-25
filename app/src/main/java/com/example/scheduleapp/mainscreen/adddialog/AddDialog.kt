@@ -1,4 +1,4 @@
-package com.example.scheduleapp.mainscreen.dialogs
+package com.example.scheduleapp.mainscreen.adddialog
 
 import android.content.Context
 import android.util.Log
