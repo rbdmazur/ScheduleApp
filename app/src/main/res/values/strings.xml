@@ -37,4 +37,7 @@
     <string name="notification_select_subject">Select subject</string>
     <string name="notification_select_date">Select date</string>
     <string name="notification_error">Please, don\'t select date before current.</string>
+
+    <string name="notification_channel_name">Subject notification</string>
+    <string name="notification_main_title">You have few notifications</string>
 </resources>

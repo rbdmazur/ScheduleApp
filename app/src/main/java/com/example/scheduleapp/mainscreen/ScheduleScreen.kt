@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -37,6 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.scheduleapp.R
 import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
 import com.example.scheduleapp.ui.theme.blue
@@ -45,14 +49,21 @@ import com.example.scheduleapp.ui.theme.gold
 import com.example.scheduleapp.ui.theme.whiteAlpha
 import com.example.scheduleapp.utils.DateFormats
 import com.example.scheduleapp.utils.DaysOfWeek
+import com.example.scheduleapp.workermanager.NotificationWorkerManager
 import java.util.Calendar
 import java.util.Date
+import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 
 @Composable
 fun ScheduleScreen(modifier: Modifier, mainViewModel: MainViewModel) {
     val state by mainViewModel.mainUiState.collectAsState()
     val dateState by mainViewModel.dateState.collectAsState()
+    val context = LocalContext.current
+    val workRequest = PeriodicWorkRequestBuilder<NotificationWorkerManager>(12, TimeUnit.HOURS)
+        .build()
+    WorkManager.getInstance(context)
+        .enqueue(workRequest)
     Column(modifier = modifier) {
         DayRow(dateState) {index ->
             mainViewModel.updateSelectedDay(index)

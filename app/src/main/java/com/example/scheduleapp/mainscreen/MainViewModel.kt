@@ -128,7 +128,12 @@ class MainViewModel @AssistedInject constructor(
         viewModelScope.launch {
             val currentSt = _mainUiState.value.currentStudent
             if (currentSt != null) {
-                _notifications.value = notificationService.getAllNotifications(currentSt.userId)
+                val notif = notificationService.getAllNotifications(currentSt.userId)
+                _notifications.value = notif.sortedWith { n1: Notification, n2: Notification ->
+                    val date1 = Date(n1.date)
+                    val date2 = Date(n2.date)
+                    date1.compareTo(date2)
+                }
             }
         }
     }

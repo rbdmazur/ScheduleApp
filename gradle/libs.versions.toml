@@ -17,6 +17,7 @@ composeBom = "2024.04.01"
 material = "1.7.8"
 navigationCompose = "2.8.8"
 roomRuntime = "2.6.1"
+workRuntimeKtx = "2.10.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -30,6 +31,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
