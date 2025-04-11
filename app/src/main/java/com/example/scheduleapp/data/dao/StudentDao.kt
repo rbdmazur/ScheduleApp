@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.scheduleapp.data.model.Student
+import com.example.scheduleapp.data.model.StudentWithEmailAndInfo
 import java.util.UUID
 
 @Dao
@@ -20,4 +22,8 @@ interface StudentDao {
 
     @Delete
     suspend fun deleteStudent(student: Student)
+
+    @Transaction
+    @Query("SELECT * FROM student WHERE userId=(:userId)")
+    suspend fun getStudentWithInfo(userId: UUID): StudentWithEmailAndInfo?
 }

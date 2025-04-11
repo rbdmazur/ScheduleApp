@@ -197,5 +197,4 @@ fun DeleteBackground(
         contentAlignment = Alignment.CenterEnd
     ) {
     }
-
 }

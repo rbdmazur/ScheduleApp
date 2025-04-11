@@ -90,7 +90,6 @@ fun AddDialog(
                 course = filterState.value.course,
                 group = filterState.value.group
             )
-            Log.d("FILTER", filterState.value.toString())
         } catch (e: HttpException) {
             if (e.code() == 401) {
                 makeErrorToast(context, "You are not authorized")
@@ -259,7 +258,6 @@ fun AddDialog(
                         val faculties by mainViewModel.faculties.collectAsState()
                         try {
                             mainViewModel.loadFaculties()
-                            Log.d("FACULT", faculties.toString())
                         } catch (e: HttpException) {
                             if (e.code() == 401) {
                                 makeErrorToast(context, "You are not authorized")

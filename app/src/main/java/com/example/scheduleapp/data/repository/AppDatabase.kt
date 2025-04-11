@@ -2,8 +2,6 @@ package com.example.scheduleapp.data.repository
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.scheduleapp.data.dao.InfoDao
 import com.example.scheduleapp.data.dao.NotificationDao
 import com.example.scheduleapp.data.dao.ScheduleDao

@@ -8,6 +8,7 @@ import com.example.scheduleapp.data.model.NotificationData
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
+import com.example.scheduleapp.data.model.StudentWithEmailAndInfo
 import com.example.scheduleapp.data.model.StudentWithSchedule
 import com.example.scheduleapp.data.model.Study
 import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
@@ -66,6 +67,9 @@ class AppRepository private constructor(context: Context) {
     }
     suspend fun deleteStudent(student: Student) = withContext(Dispatchers.IO) {
         database.getStudentDao().deleteStudent(student)
+    }
+    suspend fun getStudentWithInfo(userId: UUID): StudentWithEmailAndInfo? = withContext(Dispatchers.IO) {
+        database.getStudentDao().getStudentWithInfo(userId)
     }
     //schedule
     suspend fun getAllSchedules(): List<Schedule> = withContext(Dispatchers.IO) {

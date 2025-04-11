@@ -13,6 +13,7 @@ import com.example.scheduleapp.data.model.NotificationData
 import com.example.scheduleapp.data.model.Schedule
 import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
+import com.example.scheduleapp.data.model.StudentWithEmailAndInfo
 import com.example.scheduleapp.data.model.Study
 import com.example.scheduleapp.data.model.StudyWithTeacherAndSubject
 import com.example.scheduleapp.data.model.Subject
@@ -76,6 +77,9 @@ class MainViewModel @AssistedInject constructor(
     private val _notifications = MutableStateFlow(emptyList<Notification>())
     val notifications = _notifications.asStateFlow()
 
+    private val _studentInfo = MutableStateFlow<StudentWithEmailAndInfo?>(null)
+    val studentInfo = _studentInfo.asStateFlow()
+
     private val userService = UserService()
     private val infoService = InfoService()
     private val scheduleService = ScheduleService()
@@ -113,6 +117,15 @@ class MainViewModel @AssistedInject constructor(
             mainScheduleId = mainSchedule?.scheduleId ?: -1,
             currentStudies = studies
         )
+    }
+
+    fun loadStudentInfo() {
+        viewModelScope.launch {
+            val student = _mainUiState.value.currentStudent
+            student?.let {
+                _studentInfo.value = userService.getStudentWithInfo(it.userId)
+            }
+        }
     }
 
     fun loadSubjects() {

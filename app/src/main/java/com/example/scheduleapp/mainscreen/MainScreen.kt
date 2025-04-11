@@ -100,7 +100,7 @@ fun MainScreen(
                         SubjectsScreen(viewModel = mainViewModel, modifier = modifier)
                     }
                     composable<ProfileScreenRoute> {
-                        ProfileScreen(modifier = modifier)
+                        ProfileScreen(modifier = modifier, viewModel = mainViewModel)
                     }
                 }
             }

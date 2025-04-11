@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.scheduleapp.data.model.Schedule
-import com.example.scheduleapp.data.model.Student
 import com.example.scheduleapp.data.model.StudentToSchedule
 import com.example.scheduleapp.data.model.StudentWithSchedule
 import java.util.UUID

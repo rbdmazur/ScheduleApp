@@ -40,4 +40,8 @@
 
     <string name="notification_channel_name">Subject notification</string>
     <string name="notification_main_title">You have few notifications</string>
+
+    <string name="profile_course">course</string>
+    <string name="profile_group">group</string>
+    <string name="profile_settings">Settings</string>
 </resources>

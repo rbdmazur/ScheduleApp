@@ -1,6 +1,5 @@
 package com.example.scheduleapp.remote.auth
 
-import android.util.Log
 import com.example.scheduleapp.data.model.User
 import com.example.scheduleapp.data.services.UserService
 import retrofit2.HttpException
@@ -53,14 +52,12 @@ class AuthRepositoryImplementation(
                     authApiService.auth(header)
                     return AuthResult.Authorized(UUID.fromString(id))
                 } catch (e: HttpException) {
-                    Log.d("AUTH", e.code().toString())
                     return if (e.code() == 401) {
                         AuthResult.Unauthorized()
                     } else {
                         AuthResult.UnknownError()
                     }
                 } catch (e: ConnectException) {
-                    Log.d("AUTH", e.javaClass.name)
                     return AuthResult.AuthorizedOffline(UUID.fromString(id))
                 } catch (e: Exception) {
                     return AuthResult.UnknownError()

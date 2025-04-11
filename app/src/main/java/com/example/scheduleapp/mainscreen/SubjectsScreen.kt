@@ -100,19 +100,24 @@ fun SubjectsScreen(viewModel: MainViewModel, modifier: Modifier) {
                 )
             }
         } else {
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.Black)
+//            HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), color = Color.Black)
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                itemsIndexed(notifications) { index, item ->
+                itemsIndexed(
+                    items = notifications,
+                    key = { _, item ->
+                        item.id
+                    }
+                ) { index, item ->
                     if (index != 0) {
-                        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.Black)
+//                        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.Black)
                     }
                     val subject = subjects.firstOrNull { it.id == item.subjectId }
                     subject?.let { NotificationLazyColumnItem(item, it) }
                 }
             }
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.Black)
+//            HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), color = Color.Black)
         }
     }
 
